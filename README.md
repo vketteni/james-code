@@ -242,3 +242,4 @@ This project follows a documentation-first approach using ADRs. Before implement
 
 This project is currently in development. License to be determined.test change
 feature: add new capability
+test hook
