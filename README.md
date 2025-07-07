@@ -241,3 +241,4 @@ This project follows a documentation-first approach using ADRs. Before implement
 ## 📄 License
 
 This project is currently in development. License to be determined.test change
+feature: add new capability
