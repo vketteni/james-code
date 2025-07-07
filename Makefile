@@ -1,6 +1,6 @@
 # Makefile for James Code development
 
-.PHONY: install install-dev test test-unit test-integration lint format type-check docs clean help
+.PHONY: install install-dev test test-unit test-integration lint format type-check docs clean help version version-list version-patch version-minor version-major version-tag
 
 # Default target
 help:
