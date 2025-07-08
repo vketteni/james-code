@@ -140,13 +140,19 @@ addopts = [
     "--strict-config",
     "--cov=src/james_code",
     "--cov-report=term-missing",
-    "--cov-report=html",
+    "--cov-report=html", 
     "--cov-report=xml",
+    "--benchmark-skip",  # Skip benchmarks by default
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "performance: marks tests as performance tests",
+    "security: marks tests as security tests",
+    "benchmark: marks tests as benchmark tests",
+    "memory_intensive: marks tests that use significant memory",
+    "real_api: marks tests that use real API calls",
 ]
 
 [tool.coverage.run]
