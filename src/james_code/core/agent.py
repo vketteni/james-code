@@ -13,6 +13,7 @@ from ..tools import (
     ReadTool, WriteTool, ExecuteTool, FindTool, 
     UpdateTool, TodoTool, TaskTool
 )
+# Removed authentic_agentic_mock import - using clean architecture
 
 
 @dataclass
@@ -79,6 +80,10 @@ class Agent:
             working_directory=self.working_directory,
             session_id=config.session_id or f"session_{int(time.time())}"
         )
+        
+        # Configure LLM provider with agent context for authentic behavior
+        if hasattr(self.llm_provider, 'set_agent_context'):
+            self.llm_provider.set_agent_context(self.tool_registry, self.execution_context)
         
         # Current task state
         self.current_plan_id: Optional[str] = None
@@ -172,7 +177,7 @@ class Agent:
                 action="decompose_task",
                 description=latest_message,
                 task_type=task_type,
-                context=self._get_conversation_context()
+                conversation_context=self._get_conversation_context()
             )
             
             return result
@@ -322,10 +327,28 @@ class Agent:
             
             latest_message = user_messages[-1].content
             
-            # Simple command parsing (this would be replaced by LLM in real implementation)
-            response = self._parse_and_execute_command(latest_message)
+            # Update conversation history in authentic mock for context awareness
+            if hasattr(self.llm_provider, 'authentic_mock'):
+                self.llm_provider.authentic_mock.conversation_history = self.conversation_history
             
-            return response
+            # Use LLM provider to generate response
+            llm_response = self.llm_provider.generate_response(latest_message)
+            
+            # Parse and execute any tool calls from the response
+            tool_calls = self.llm_provider.parse_tool_calls(llm_response)
+            
+            # Execute tool calls if any
+            if tool_calls:
+                for tool_call in tool_calls:
+                    tool_name = tool_call.get("tool")
+                    params = tool_call.get("parameters", {})
+                    
+                    tool = self.tool_registry.get_tool(tool_name)
+                    if tool and tool_call.get("status") != "executed":
+                        result = tool.execute(self.execution_context, **params)
+                        # Tool execution results are reflected in the response
+            
+            return llm_response
             
         except Exception as e:
             return f"Error handling request: {str(e)}"
@@ -498,12 +521,15 @@ class Agent:
 
 
 class MockLLMProvider(LLMProvider):
-    """Mock LLM provider for testing."""
+    """Basic mock LLM provider for testing. Use presentation provider for demos."""
+    
+    def __init__(self):
+        pass
     
     def generate_response(self, prompt: str, tools: Optional[list] = None) -> str:
-        """Generate a mock response."""
-        return f"Mock response to: {prompt[:100]}..."
+        """Generate basic mock response."""
+        return f"Mock response for: {prompt}"
     
     def parse_tool_calls(self, response: str) -> list:
-        """Parse mock tool calls."""
-        return []
+        """Parse tool calls from response."""
+        return []  # No tool calls in basic mock
