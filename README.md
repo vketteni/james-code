@@ -1,12 +1,42 @@
-# Agentic System
+# James Code
 
-A sophisticated agentic system with comprehensive READ, WRITE, EXECUTE, FIND, UPDATE, TODO, and TASK tools for autonomous local environment navigation and task execution.
+Hi, James Code is an agentic system, essentially a reconstruction of claude code. 
 
-## 🚀 Features
+## 🚀 Disclaimer
+
+James is still in development, designs aren't fully implemented, logical inconsitencies can still be present.   
+
+The goal is to establish a multi-turn response pattern akin to OpenAI/Anthropic.
+```python
+  OpenAI/Anthropic Pattern:
+  messages = [{"role": "user", "content": "Analyze this codebase"}]
+
+  while True:
+      response = client.chat.completions.create(
+          model="gpt-4",
+          messages=messages,
+          tools=tool_schemas
+      )
+
+      if response.choices[0].finish_reason == "tool_calls":
+          # Execute tools and add results
+          for tool_call in response.choices[0].message.tool_calls:
+              result = execute_tool(tool_call)
+              messages.append({
+                  "role": "tool",
+                  "tool_call_id": tool_call.id,
+                  "content": str(result)
+              })
+      else:
+          break  # LLM finished without more tools
+```
+
+
+## 🚀 Feature Plan
 
 ### Core Capabilities
-- **🔍 Advanced Search**: Pattern-based file discovery, content search, function finding
-- **✏️ Surgical Editing**: Line-based updates, pattern replacement, patch application  
+- **🔍 Search**: Pattern-based file discovery, content search, function finding
+- **✏️ Editing**: Line-based updates, pattern replacement, patch application  
 - **📋 Task Management**: TODO tracking, subtasks, progress monitoring
 - **🧩 Task Decomposition**: Automatic breakdown of complex requests into executable steps
 - **🛡️ Security Framework**: Multi-layered validation, audit logging, sandboxing
@@ -62,184 +92,6 @@ This project uses Architecture Decision Records (ADRs) to document important arc
 └── README.md
 ```
 
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-# Install from PyPI (when available)
-pip install james-code
-
-# Or install from source
-git clone https://github.com/your-org/james-code
-cd james-code
-poetry install
-```
-
-### Basic Usage
-
-```python
-from james_code import Agent, AgentConfig
-
-# Configure the agent
-config = AgentConfig(
-    working_directory="./workspace",
-    auto_planning=True,
-    verbose_logging=True
-)
-
-# Initialize agent
-agent = Agent(config)
-
-# Process requests
-response = agent.process_request("find all Python files and analyze their structure")
-print(response)
-```
-
-### Command Line Interface
-
-```bash
-# Interactive mode
-james-code --interactive --workspace ./my-project
-
-# Single command
-james-code --workspace ./my-project "analyze this codebase"
-
-# With custom security settings
-james-code --strict --allowed-commands python3,pytest "run tests"
-```
-
-### Advanced Usage with Custom Safety
-
-```python
-from james_code import Agent, AgentConfig, SafetyConfig
-
-# Configure security
-safety_config = SafetyConfig(
-    base_directory="./secure_workspace",
-    allowed_commands=["python3", "pytest", "git"],
-    blocked_commands=["rm", "sudo"],
-    enable_audit_logging=True,
-    strict_mode=False
-)
-
-config = AgentConfig(
-    working_directory="./workspace",
-    safety_config=safety_config,
-    auto_planning=True
-)
-
-agent = Agent(config)
-
-# Complex development task
-response = agent.process_request("""
-Create a Python web API with:
-1. FastAPI framework setup
-2. Database models
-3. REST endpoints
-4. Unit tests
-5. Documentation
-""")
-```
-
-## 🔧 Direct Tool Usage
-
-```python
-# Access tools directly
-find_tool = agent.tool_registry.get_tool("find")
-
-# Search for functions
-result = find_tool.execute(
-    agent.execution_context,
-    action="find_function",
-    function_name="calculate",
-    language="python"
-)
-
-# Update files surgically  
-update_tool = agent.tool_registry.get_tool("update")
-result = update_tool.execute(
-    agent.execution_context,
-    action="replace_pattern",
-    path="calculator.py", 
-    pattern="def old_function",
-    replacement="def new_function"
-)
-```
-
-## 🛡️ Security Features
-
-- **Path Validation**: All operations confined to working directory
-- **Command Filtering**: Configurable allow/block lists for commands
-- **Resource Limits**: File size, timeout, and memory constraints
-- **Audit Logging**: Comprehensive security event tracking
-- **Violation Monitoring**: Real-time security violation detection
-
-## 📋 Task Management
-
-The system includes sophisticated task management capabilities:
-
-```python
-# Create todos
-todo_tool = agent.tool_registry.get_tool("todo")
-result = todo_tool.execute(
-    agent.execution_context,
-    action="create_todo",
-    title="Implement authentication",
-    priority="high",
-    tags=["security", "backend"]
-)
-
-# Automatic task decomposition
-task_tool = agent.tool_registry.get_tool("task")
-result = task_tool.execute(
-    agent.execution_context,
-    action="decompose_task",
-    description="Build a REST API with authentication",
-    task_type="development"
-)
-```
-
-## 🔍 Examples
-
-Run the included examples to see the system in action:
-
-```bash
-# Basic usage
-python examples/basic_usage.py
-
-# Advanced capabilities  
-python examples/advanced_example.py
-```
-
-## 🎯 Use Cases
-
-- **Code Analysis**: Analyze large codebases, find patterns, generate reports
-- **Development Automation**: Automate repetitive development tasks
-- **File Processing**: Batch file operations with safety guarantees  
-- **Project Management**: Break down complex projects into manageable tasks
-- **Code Refactoring**: Safely refactor code with surgical precision
-- **Documentation**: Generate and maintain project documentation
-
-## 🔮 Future Enhancements
-
-- **LLM Integration**: Support for OpenAI, Anthropic, and other providers
-- **MCP Compatibility**: Model Context Protocol integration
-- **Extended Tools**: Git operations, database tools, API clients
-- **Web Interface**: Browser-based agent interaction
-- **Plugin System**: Custom tool development framework
-
-## 🤝 Contributing
-
-This project follows a documentation-first approach using ADRs. Before implementing features:
-
-1. Review existing ADRs in `docs/adr/`
-2. Create new ADRs for significant decisions
-3. Follow the established patterns and security practices
-4. Ensure comprehensive testing
-
 ## 📄 License
 
-This project is currently in development. License to be determined.test change
-feature: add new capability
-test hook
+This project is currently in development. License to be determined.
