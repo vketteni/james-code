@@ -1,6 +1,6 @@
 # Makefile for James Code development
 
-.PHONY: install install-dev test test-unit test-integration lint format type-check docs clean help version version-list version-patch version-minor version-major version-tag
+.PHONY: install install-dev test test-unit test-integration test-performance test-security test-benchmark lint format type-check docs clean help version version-list version-patch version-minor version-major version-tag
 
 # Default target
 help:
@@ -10,6 +10,10 @@ help:
 	@echo "  test         - Run all tests"
 	@echo "  test-unit    - Run unit tests only"
 	@echo "  test-integration - Run integration tests only"
+	@echo "  test-performance - Run performance tests"
+	@echo "  test-security - Run security tests"
+	@echo "  test-benchmark - Run benchmark tests"
+	@echo "  test-fast    - Run fast tests (exclude slow and benchmark)"
 	@echo "  lint         - Run code linting (ruff)"
 	@echo "  format       - Format code (black)"
 	@echo "  type-check   - Run type checking (mypy)"
@@ -41,8 +45,23 @@ test-unit:
 test-integration:
 	poetry run pytest tests/integration/ -v
 
+test-performance:
+	poetry run pytest -m performance -v
+
+test-security:
+	poetry run pytest -m security -v
+
+test-benchmark:
+	poetry run pytest --benchmark-only -v
+
+test-fast:
+	poetry run pytest -m "not slow and not benchmark" -v
+
 test-coverage:
-	poetry run pytest --cov=src/agent_llm --cov-report=html --cov-report=term
+	poetry run pytest --cov=src/james_code --cov-report=html --cov-report=term
+
+test-with-benchmarks:
+	poetry run pytest --benchmark-autosave
 
 # Code quality
 lint:
