@@ -1,4 +1,4 @@
-"""Agent LLM System - An agentic LLM system with READ, WRITE, and EXECUTE tools."""
+"""Agent LLM System - An agentic system with READ, WRITE, and EXECUTE tools."""
 
 from .core.agent import Agent, AgentConfig
 from .core.base import Tool, ToolResult, ExecutionContext, LLMProvider, ToolRegistry

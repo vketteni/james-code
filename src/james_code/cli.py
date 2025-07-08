@@ -13,7 +13,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Create the command-line argument parser."""
     parser = argparse.ArgumentParser(
         prog="agent-llm",
-        description="Agentic LLM system with READ, WRITE, and EXECUTE tools",
+        description="Agentic system with READ, WRITE, and EXECUTE tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
