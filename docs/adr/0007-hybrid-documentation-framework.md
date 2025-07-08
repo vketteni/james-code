@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-Our agentic LLM system includes 7 sophisticated tools with complex parameter schemas and multiple actions. We need comprehensive documentation that provides value without creating a maintenance nightmare where every code change requires extensive documentation updates.
+Our agentic system includes 7 sophisticated tools with complex parameter schemas and multiple actions. We need comprehensive documentation that provides value without creating a maintenance nightmare where every code change requires extensive documentation updates.
 
 **The Documentation Dilemma:**
 - Comprehensive documentation is valuable for users

@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-We need to design the core architecture for an agentic LLM system that can:
+We need to design the core architecture for an agentic system that can:
 - Use READ, WRITE, and EXECUTE tools to navigate a local environment
 - Maintain conversation context and planning state
 - Execute multi-step tasks autonomously

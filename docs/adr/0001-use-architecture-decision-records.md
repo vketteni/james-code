@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-We are building an agentic LLM system that can use READ, WRITE and EXECUTE tools to navigate inside a local user environment. This is a complex system with many architectural decisions to make regarding:
+We are building an agentic system that can use READ, WRITE and EXECUTE tools to navigate inside a local user environment. This is a complex system with many architectural decisions to make regarding:
 
 - Agent architecture and orchestration
 - Tool system design and safety constraints

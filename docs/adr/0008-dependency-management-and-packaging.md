@@ -112,7 +112,7 @@ james-code/
 [tool.poetry]
 name = "james-code"
 version = "0.1.0"
-description = "Agentic LLM system with READ, WRITE, and EXECUTE tools"
+description = "Agentic system with READ, WRITE, and EXECUTE tools"
 authors = ["Your Team"]
 packages = [{include = "james_code", from = "src"}]
 

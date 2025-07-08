@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-An agentic LLM system with file system and command execution capabilities poses significant security risks:
+An agentic system with file system and command execution capabilities poses significant security risks:
 
 - **File System Access**: Potential to read/write sensitive files
 - **Command Execution**: Risk of destructive commands or system compromise

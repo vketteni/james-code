@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-The agentic LLM system needs a robust tool system that provides READ, WRITE, and EXECUTE capabilities while maintaining security and extensibility. Key requirements:
+The agentic system needs a robust tool system that provides READ, WRITE, and EXECUTE capabilities while maintaining security and extensibility. Key requirements:
 
 - **READ**: File system navigation, content reading, directory listing
 - **WRITE**: File creation, modification, deletion

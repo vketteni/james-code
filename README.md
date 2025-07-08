@@ -1,6 +1,6 @@
-# Agentic LLM System
+# Agentic System
 
-A sophisticated agentic LLM system with comprehensive READ, WRITE, EXECUTE, FIND, UPDATE, TODO, and TASK tools for autonomous local environment navigation and task execution.
+A sophisticated agentic system with comprehensive READ, WRITE, EXECUTE, FIND, UPDATE, TODO, and TASK tools for autonomous local environment navigation and task execution.
 
 ## 🚀 Features
 
