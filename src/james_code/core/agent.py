@@ -13,8 +13,6 @@ from ..tools import (
     ReadTool, WriteTool, ExecuteTool, FindTool, 
     UpdateTool, TodoTool, TaskTool
 )
-# Removed authentic_agentic_mock import - using clean architecture
-
 
 @dataclass
 class AgentConfig:
@@ -66,12 +64,12 @@ class Agent:
         if config.verbose_logging:
             logging.basicConfig(level=logging.INFO)
         
+        # Initialize LLM provider (mock for now)
+        self.llm_provider = self._create_llm_provider(config.llm_provider)
+        
         # Initialize tool registry
         self.tool_registry = ToolRegistry()
         self._register_default_tools()
-        
-        # Initialize LLM provider (mock for now)
-        self.llm_provider = self._create_llm_provider(config.llm_provider)
         
         # Conversation state
         self.conversation_history: List[ConversationMessage] = []
@@ -89,6 +87,10 @@ class Agent:
         
         self.logger.info(f"Agent initialized in {self.working_directory}")
     
+    def _add_message(self, role: str, msg: str):
+            msg = ConversationMessage(role, msg, "timestamp")
+            self.conversation_history.append(msg)
+
     def _register_default_tools(self):
         """Register default tools."""
         tools = [
@@ -236,7 +238,7 @@ class Agent:
         """Get schema of available tools for LLM."""
         tools_schema = []
         
-        for tool_name in self.tool_registry.tools:
+        for tool_name in self.tool_registry.get_all_tools():
             tool = self.tool_registry.get_tool(tool_name)
             if tool and hasattr(tool, 'get_schema'):
                 schema = tool.get_schema()
