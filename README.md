@@ -6,31 +6,6 @@ Hi, James Code is an agentic system, essentially a reconstruction of claude code
 
 James is still in development, designs aren't fully implemented, logical inconsitencies can still be present.   
 
-The goal is to establish a multi-turn response pattern akin to OpenAI/Anthropic.
-```python
-  OpenAI/Anthropic Pattern:
-  messages = [{"role": "user", "content": "Analyze this codebase"}]
-
-  while True:
-      response = client.chat.completions.create(
-          model="gpt-4",
-          messages=messages,
-          tools=tool_schemas
-      )
-
-      if response.choices[0].finish_reason == "tool_calls":
-          # Execute tools and add results
-          for tool_call in response.choices[0].message.tool_calls:
-              result = execute_tool(tool_call)
-              messages.append({
-                  "role": "tool",
-                  "tool_call_id": tool_call.id,
-                  "content": str(result)
-              })
-      else:
-          break  # LLM finished without more tools
-```
-
 ## Getting Started
 
 ```bash
