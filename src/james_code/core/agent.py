@@ -255,17 +255,21 @@ class Agent:
         return "\n".join(context_parts)
     
     def _get_available_tools_schema(self) -> list:
-        """Get schema of available tools for LLM."""
+        """Get schema of available tools for LLM in standard function calling format."""
         tools_schema = []
         
         for tool_name in self.tool_registry.get_all_tools():
             tool = self.tool_registry.get_tool(tool_name)
             if tool and hasattr(tool, 'get_schema'):
                 schema = tool.get_schema()
+                # Format for OpenAI/Anthropic function calling
                 tools_schema.append({
-                    "name": tool_name,
-                    "description": tool.description,
-                    "schema": schema
+                    "type": "function",
+                    "function": {
+                        "name": schema["name"],
+                        "description": schema["description"],
+                        "parameters": schema["parameters"]
+                    }
                 })
         
         return tools_schema
