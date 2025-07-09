@@ -31,6 +31,13 @@ The goal is to establish a multi-turn response pattern akin to OpenAI/Anthropic.
           break  # LLM finished without more tools
 ```
 
+## Getting Started
+
+```bash
+poetry install
+poetry run python -m src.james_code.cli --interactive
+```
+
 
 ## 🚀 Feature Plan
 
@@ -53,8 +60,6 @@ The goal is to establish a multi-turn response pattern akin to OpenAI/Anthropic.
 
 
 ## 📍 Program Starting Points
-
-
 
   ```toml
   # pyproject.toml
