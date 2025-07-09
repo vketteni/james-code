@@ -29,6 +29,7 @@ packages = [{include = "james_code", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 # Core dependencies (minimal for now)
+openai = {version = "^1.0.0", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 # Testing
