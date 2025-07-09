@@ -605,7 +605,7 @@ class TodoTool(Tool):
             "properties": {
                 "action": {
                     "type": "string",
-                    "enum": ["create_todo", "list_todos", "update_todo", "delete_todo", "add_subtask", "get_todo", "search_todos", "get_stats"],
+                    "enum": ["create_todo", "list_todos", "update_todo", "delete_todo", "add_subtask", "get_todo", "search_todos", "get_stats", "execute_todo", "auto_expand_todo", "get_next_executable_todos"],
                     "description": "Action to perform"
                 },
                 "title": {
