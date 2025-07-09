@@ -56,6 +56,28 @@ Examples:
         help="Commands allowed for execution (default: python3, pytest, git, ls, cat)"
     )
     
+    # LLM configuration
+    parser.add_argument(
+        "--llm-provider",
+        type=str,
+        choices=["mock", "openai"],
+        default="mock",
+        help="LLM provider to use (default: mock)"
+    )
+    
+    parser.add_argument(
+        "--llm-model",
+        type=str,
+        help="LLM model name (e.g., gpt-4, gpt-3.5-turbo)"
+    )
+    
+    parser.add_argument(
+        "--llm-temperature",
+        type=float,
+        default=0.7,
+        help="LLM temperature (0.0-1.0, default: 0.7)"
+    )
+    
     parser.add_argument(
         "--interactive", "-i",
         action="store_true",
@@ -88,12 +110,14 @@ def setup_agent(args: argparse.Namespace) -> Agent:
     # Create agent configuration
     agent_config = AgentConfig(
         working_directory=str(workspace),
+        llm_provider=args.llm_provider,
+        llm_model=args.llm_model,
+        llm_temperature=args.llm_temperature,
         safety_config=safety_config,
         verbose_logging=args.verbose
     )
     
     return Agent(agent_config)
-
 
 def interactive_mode(agent: Agent) -> None:
     """Run the agent in interactive mode."""
