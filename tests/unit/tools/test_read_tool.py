@@ -222,3 +222,22 @@ class TestReadTool:
         assert result.success
         assert result.data == ""
         assert result.metadata["file_size"] == 0
+    
+    def test_schema_includes_examples(self, read_tool):
+        """Test that the schema includes usage examples."""
+        schema = read_tool.get_schema()
+        
+        assert "examples" in schema
+        assert isinstance(schema["examples"], list)
+        assert len(schema["examples"]) > 0
+        
+        # Check that examples have the right structure
+        for example in schema["examples"]:
+            assert "description" in example
+            assert "parameters" in example
+            assert "action" in example["parameters"]
+            assert "path" in example["parameters"]
+            
+            # Verify action is valid
+            valid_actions = ["read_file", "list_directory", "file_exists", "get_file_info"]
+            assert example["parameters"]["action"] in valid_actions

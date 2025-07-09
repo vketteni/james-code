@@ -263,13 +263,19 @@ class Agent:
             if tool and hasattr(tool, 'get_schema'):
                 schema = tool.get_schema()
                 # Format for OpenAI/Anthropic function calling
+                function_schema = {
+                    "name": schema["name"],
+                    "description": schema["description"],
+                    "parameters": schema["parameters"]
+                }
+                
+                # Include examples if provided
+                if "examples" in schema:
+                    function_schema["examples"] = schema["examples"]
+                    
                 tools_schema.append({
                     "type": "function",
-                    "function": {
-                        "name": schema["name"],
-                        "description": schema["description"],
-                        "parameters": schema["parameters"]
-                    }
+                    "function": function_schema
                 })
         
         return tools_schema

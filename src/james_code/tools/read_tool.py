@@ -3,7 +3,7 @@
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 from ..core.base import Tool, ToolResult, ExecutionContext
 
@@ -209,3 +209,43 @@ class ReadTool(Tool):
             },
             "required": ["action", "path"]
         }
+    
+    def _get_examples(self) -> List[Dict[str, Any]]:
+        """Get usage examples for this tool."""
+        return [
+            {
+                "description": "Read a Python source file",
+                "parameters": {
+                    "action": "read_file",
+                    "path": "src/main.py"
+                }
+            },
+            {
+                "description": "List files in current directory",
+                "parameters": {
+                    "action": "list_directory",
+                    "path": "."
+                }
+            },
+            {
+                "description": "Check if a configuration file exists",
+                "parameters": {
+                    "action": "file_exists",
+                    "path": "config.json"
+                }
+            },
+            {
+                "description": "Get detailed information about a file",
+                "parameters": {
+                    "action": "get_file_info",
+                    "path": "README.md"
+                }
+            },
+            {
+                "description": "Explore a subdirectory",
+                "parameters": {
+                    "action": "list_directory",
+                    "path": "tests"
+                }
+            }
+        ]

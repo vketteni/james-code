@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 
@@ -43,16 +43,27 @@ class Tool(ABC):
     
     def get_schema(self) -> Dict[str, Any]:
         """Get the tool's parameter schema."""
-        return {
+        schema = {
             "name": self.name,
             "description": self.description,
             "parameters": self._get_parameter_schema()
         }
+        
+        # Add examples if the tool provides them
+        examples = self._get_examples()
+        if examples:
+            schema["examples"] = examples
+            
+        return schema
     
     @abstractmethod
     def _get_parameter_schema(self) -> Dict[str, Any]:
         """Get the parameter schema for this tool."""
         pass
+    
+    def _get_examples(self) -> Optional[List[Dict[str, Any]]]:
+        """Get usage examples for this tool. Override in subclasses to provide examples."""
+        return None
 
 
 class LLMProvider(ABC):
