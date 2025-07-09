@@ -38,6 +38,12 @@ poetry install
 poetry run python -m src.james_code.cli --interactive
 ```
 
+```bash
+poetry install --extras llm
+export OPENAI_API_KEY="your-key"
+poetry run james-code --llm-provider openai --llm-model gpt-4.1 --interactive
+```
+
 
 ## 🚀 Feature Plan
 
