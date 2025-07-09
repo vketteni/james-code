@@ -44,6 +44,19 @@ export OPENAI_API_KEY="your-key"
 poetry run james-code --llm-provider openai --llm-model gpt-4.1 --interactive
 ```
 
+## Examples
+
+```bash
+👤 You: create a new file that contains the message "hi, it's chatgpt"
+🤖 Agent: I have created a new file containing the message "hi, it's chatgpt" at the path /home/vketteni/projects/james-code/workspace/new_message.txt. Would you like to do anything else?
+
+👤 You: can you run ls?
+🤖 Agent: The directory contains the following files:
+- agent_task_plans.json
+- new_message.txt
+
+Would you like to do anything else?
+```
 
 ## 🚀 Feature Plan
 
