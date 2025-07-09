@@ -51,6 +51,51 @@ The goal is to establish a multi-turn response pattern akin to OpenAI/Anthropic.
 - **TodoTool**: Comprehensive task management with hierarchical organization
 - **TaskTool**: Intelligent task decomposition and execution planning
 
+
+## 📍 Program Starting Points
+
+
+
+  ```toml
+  # pyproject.toml
+  [tool.poetry.scripts]
+  james-code = "james_code.cli:main"  # Entry point
+  ```
+
+##  🔄 Execution Flow
+
+  1. CLI Entry:
+  ```python
+  # cli.py:main()
+  def main():
+      agent = setup_agent(args)  # Creates Agent
+      agent.process_request(user_input)  # Processes request
+  ```
+
+  2. Agent Initialization:
+  ```python
+  # agent.py:__init__()
+  def _register_default_tools(self):
+      tools = [
+          ReadTool(), WriteTool(), ExecuteTool(), FindTool(),
+          UpdateTool(), TodoTool(), TaskTool() 
+      ]
+  ```
+
+  3. Request Processing:
+  ```python
+  # agent.py:process_request()
+  def _process_conversation(self):
+      if self.config.auto_planning and not self.current_plan_id:
+          plan_result = self._create_task_plan()  # Creates TaskPlan first
+
+      if self.current_plan_id:
+          return self._execute_current_plan()  # Executes TaskPlan steps
+      else:
+          return self._handle_request_directly()  # LLM-driven tool calls
+  ```
+
+
 ## 🏗️ Architecture Decision Records
 
 This project uses Architecture Decision Records (ADRs) to document important architectural decisions. All ADRs are stored in `docs/adr/`.
