@@ -47,10 +47,10 @@ Would you like to do anything else?
 - **ReadTool**: File reading, directory listing, metadata access
 - **WriteTool**: File creation, modification, deletion
 - **ExecuteTool**: Safe command execution with timeout and filtering
-- **FindTool**: Advanced file and content search capabilities  
+- **FindTool**: File and content search capabilities  
 - **UpdateTool**: Surgical file modifications and patch application
-- **TodoTool**: Enhanced task management with tool execution and LLM-driven auto-expansion
-- **TaskTool**: Manual task decomposition and execution planning (for explicit planning requests)
+- **TodoTool**: Task management with tool execution (multi-turn)
+- **TaskTool**: Task decomposition and execution planning 
 
 
 ## 📍 Program Starting Points
@@ -133,31 +133,3 @@ This project uses Architecture Decision Records (ADRs) to document important arc
 - [ADR-0006: Additional Fundamental Tools](docs/adr/0006-additional-fundamental-tools.md)
 - [ADR-0009: Testing Implementation Strategy](docs/adr/0009-testing-implementation-strategy.md)
 - [ADR-0010: LLM-Driven Architecture](docs/adr/0010-llm-driven-architecture.md)
-
-## 📁 Project Structure
-
-```
-.
-├── docs/
-│   └── adr/                    # Architecture Decision Records
-├── src/
-│   └── james_code/
-│       ├── core/               # Core agent and base classes
-│       │   ├── base.py         # Abstract interfaces
-│       │   └── agent.py        # Main agent orchestration
-│       ├── tools/              # Tool implementations
-│       │   ├── read_tool.py    # File system reading
-│       │   ├── write_tool.py   # File system writing
-│       │   ├── execute_tool.py # Command execution
-│       │   ├── find_tool.py    # Search capabilities
-│       │   ├── update_tool.py  # Surgical file editing
-│       │   ├── todo_tool.py    # Task management
-│       │   └── task_tool.py    # Task decomposition
-│       ├── safety/             # Security framework
-│       │   └── safety_manager.py
-│       └── __init__.py
-├── examples/                   # Usage examples
-│   ├── basic_usage.py         # Simple examples
-│   └── advanced_example.py    # Complex demonstrations
-└── README.md
-```
