@@ -89,8 +89,7 @@ def setup_agent(args: argparse.Namespace) -> Agent:
     agent_config = AgentConfig(
         working_directory=str(workspace),
         safety_config=safety_config,
-        verbose_logging=args.verbose,
-        auto_planning=True
+        verbose_logging=args.verbose
     )
     
     return Agent(agent_config)
