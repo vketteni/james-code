@@ -18,7 +18,11 @@ from ..tools import (
 class AgentConfig:
     """Configuration for the agent."""
     working_directory: str
-    llm_provider: str = "mock"  # Will be expanded later
+    llm_provider: str = "mock"  # "mock", "openai", "anthropic"
+    llm_model: Optional[str] = None  # Model name (e.g., "gpt-4", "claude-3")
+    llm_api_key: Optional[str] = None  # API key (can also use env vars)
+    llm_temperature: float = 0.7
+    llm_max_tokens: Optional[int] = None
     safety_config: Optional[SafetyConfig] = None
     max_iterations: int = 50
     verbose_logging: bool = True
@@ -112,8 +116,24 @@ class Agent:
         """Create LLM provider instance."""
         if provider_name == "mock":
             return MockLLMProvider()
+        elif provider_name == "openai":
+            try:
+                from ..llm.openai_provider import OpenAIProvider, OpenAIConfig
+                
+                # Create OpenAI config from agent config
+                openai_config = OpenAIConfig(
+                    api_key=self.config.llm_api_key,
+                    model=self.config.llm_model or "gpt-4",
+                    temperature=self.config.llm_temperature,
+                    max_tokens=self.config.llm_max_tokens
+                )
+                
+                return OpenAIProvider(openai_config)
+            except ImportError:
+                raise ValueError(
+                    "OpenAI provider not available. Install with: pip install openai"
+                )
         else:
-            # TODO: Implement real LLM providers (OpenAI, Anthropic, etc.)
             raise ValueError(f"LLM provider not supported: {provider_name}")
     
     def process_request(self, user_input: str) -> str:
