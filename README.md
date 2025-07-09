@@ -186,7 +186,3 @@ This project uses Architecture Decision Records (ADRs) to document important arc
 │   └── advanced_example.py    # Complex demonstrations
 └── README.md
 ```
-
-## 📄 License
-
-This project is currently in development. License to be determined.
