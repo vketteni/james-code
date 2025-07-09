@@ -195,7 +195,7 @@ class TaskTool(Tool):
     def _decompose_task(self, context: ExecutionContext, **kwargs) -> ToolResult:
         """Decompose a complex task into steps."""
         description = kwargs["description"]
-        context_info = kwargs.get("context", "")
+        context_info = kwargs.get("conversation_context", "")
         task_type = kwargs.get("task_type", "general")
         
         try:
@@ -248,307 +248,21 @@ class TaskTool(Tool):
             )
     
     def _analyze_and_decompose(self, description: str, context: str, task_type: str) -> List[TaskStep]:
-        """Analyze task and decompose into steps."""
-        steps = []
-        step_counter = 1
-        
-        # Common task patterns and their decomposition
-        desc_lower = description.lower()
-        
-        if "implement" in desc_lower or "create" in desc_lower or "build" in desc_lower:
-            # Development task pattern
-            steps.extend(self._decompose_development_task(description, step_counter))
-        elif "analyze" in desc_lower or "research" in desc_lower or "investigate" in desc_lower:
-            # Analysis task pattern
-            steps.extend(self._decompose_analysis_task(description, step_counter))
-        elif "fix" in desc_lower or "debug" in desc_lower or "resolve" in desc_lower:
-            # Bug fix task pattern
-            steps.extend(self._decompose_bugfix_task(description, step_counter))
-        elif "refactor" in desc_lower or "improve" in desc_lower or "optimize" in desc_lower:
-            # Refactoring task pattern
-            steps.extend(self._decompose_refactor_task(description, step_counter))
-        else:
-            # Generic task pattern
-            steps.extend(self._decompose_generic_task(description, step_counter))
-        
-        return steps
-    
-    def _decompose_development_task(self, description: str, start_counter: int) -> List[TaskStep]:
-        """Decompose a development task."""
-        steps = []
-        counter = start_counter
-        
-        # Research and planning
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Research and understand requirements",
-            description="Research existing codebase and understand requirements",
-            tool_name="find",
-            tool_params={"action": "search_content", "query": "related functionality"},
+        """Analyze task and decompose into steps using LLM guidance."""
+        # For now, return a simple single-step plan
+        # This removes the rigid keyword-based decomposition
+        # The Agent's LLM will handle intelligent planning
+        step = TaskStep(
+            id="step_1",
+            title=f"Execute: {description[:50]}...",
+            description=description,
+            tool_name="execute",
+            tool_params={"command": "echo 'LLM-driven execution placeholder'"},
             status="pending",
             dependencies=[],
             estimated_duration=30
-        ))
-        counter += 1
-        
-        # Design
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Create design plan",
-            description="Design the implementation approach",
-            tool_name="todo",
-            tool_params={"action": "create_todo", "title": "Design implementation"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=20
-        ))
-        counter += 1
-        
-        # Implementation
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Implement core functionality",
-            description="Write the main implementation code",
-            tool_name="write",
-            tool_params={"action": "write_file", "path": "implementation.py"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=120
-        ))
-        counter += 1
-        
-        # Testing
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Test implementation",
-            description="Run tests and verify functionality",
-            tool_name="execute",
-            tool_params={"command": "python -m pytest tests/"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=30
-        ))
-        
-        return steps
-    
-    def _decompose_analysis_task(self, description: str, start_counter: int) -> List[TaskStep]:
-        """Decompose an analysis task."""
-        steps = []
-        counter = start_counter
-        
-        # Gather information
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Gather relevant files",
-            description="Find and collect relevant files for analysis",
-            tool_name="find",
-            tool_params={"action": "find_files", "pattern": "*"},
-            status="pending",
-            dependencies=[],
-            estimated_duration=15
-        ))
-        counter += 1
-        
-        # Analyze content
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Analyze code content",
-            description="Read and analyze the content of relevant files",
-            tool_name="read",
-            tool_params={"action": "read_file"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=45
-        ))
-        counter += 1
-        
-        # Document findings
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Document analysis results",
-            description="Create documentation of analysis findings",
-            tool_name="write",
-            tool_params={"action": "write_file", "path": "analysis_results.md"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=30
-        ))
-        
-        return steps
-    
-    def _decompose_bugfix_task(self, description: str, start_counter: int) -> List[TaskStep]:
-        """Decompose a bug fix task."""
-        steps = []
-        counter = start_counter
-        
-        # Reproduce bug
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Reproduce the bug",
-            description="Identify and reproduce the reported bug",
-            tool_name="execute",
-            tool_params={"command": "python reproduce_bug.py"},
-            status="pending",
-            dependencies=[],
-            estimated_duration=20
-        ))
-        counter += 1
-        
-        # Locate bug source
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Locate bug source",
-            description="Find the source code causing the bug",
-            tool_name="find",
-            tool_params={"action": "search_content", "query": "error pattern"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=30
-        ))
-        counter += 1
-        
-        # Fix the bug
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Implement bug fix",
-            description="Fix the identified bug in the code",
-            tool_name="update",
-            tool_params={"action": "replace_pattern"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=45
-        ))
-        counter += 1
-        
-        # Verify fix
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Verify bug fix",
-            description="Test that the bug is fixed and no regressions",
-            tool_name="execute",
-            tool_params={"command": "python -m pytest"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=20
-        ))
-        
-        return steps
-    
-    def _decompose_refactor_task(self, description: str, start_counter: int) -> List[TaskStep]:
-        """Decompose a refactoring task."""
-        steps = []
-        counter = start_counter
-        
-        # Analyze current code
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Analyze current implementation",
-            description="Understand the current code structure",
-            tool_name="read",
-            tool_params={"action": "read_file"},
-            status="pending",
-            dependencies=[],
-            estimated_duration=30
-        ))
-        counter += 1
-        
-        # Plan refactoring
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Plan refactoring approach",
-            description="Design the refactoring strategy",
-            tool_name="todo",
-            tool_params={"action": "create_todo", "title": "Refactoring plan"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=20
-        ))
-        counter += 1
-        
-        # Implement refactoring
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Implement refactoring",
-            description="Apply the refactoring changes",
-            tool_name="update",
-            tool_params={"action": "replace_function"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=90
-        ))
-        counter += 1
-        
-        # Test refactored code
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Test refactored code",
-            description="Ensure refactoring didn't break functionality",
-            tool_name="execute",
-            tool_params={"command": "python -m pytest"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=25
-        ))
-        
-        return steps
-    
-    def _decompose_generic_task(self, description: str, start_counter: int) -> List[TaskStep]:
-        """Decompose a generic task."""
-        steps = []
-        counter = start_counter
-        
-        # Understanding phase
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Understand task requirements",
-            description="Analyze and understand what needs to be done",
-            tool_name="read",
-            tool_params={"action": "list_directory", "path": "."},
-            status="pending",
-            dependencies=[],
-            estimated_duration=15
-        ))
-        counter += 1
-        
-        # Planning phase
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Create execution plan",
-            description="Plan how to accomplish the task",
-            tool_name="todo",
-            tool_params={"action": "create_todo", "title": f"Execute: {description}"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=10
-        ))
-        counter += 1
-        
-        # Execution phase
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Execute main task",
-            description="Perform the main task execution",
-            tool_name="execute",
-            tool_params={"command": "echo 'Task execution placeholder'"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=60
-        ))
-        counter += 1
-        
-        # Verification phase
-        steps.append(TaskStep(
-            id=f"step_{counter}",
-            title="Verify task completion",
-            description="Verify that the task was completed successfully",
-            tool_name="read",
-            tool_params={"action": "file_exists", "path": "result.txt"},
-            status="pending",
-            dependencies=[f"step_{counter-1}"],
-            estimated_duration=10
-        ))
-        
-        return steps
+        )
+        return [step]
     
     def _create_plan(self, context: ExecutionContext, **kwargs) -> ToolResult:
         """Create a new task plan manually."""
@@ -680,7 +394,7 @@ class TaskTool(Tool):
                     "type": "string",
                     "description": "Step ID"
                 },
-                "context": {
+                "conversation_context": {
                     "type": "string",
                     "description": "Additional context for task decomposition"
                 },
