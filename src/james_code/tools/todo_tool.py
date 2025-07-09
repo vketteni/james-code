@@ -26,23 +26,32 @@ class TodoItem:
     parent_id: Optional[str] = None
     estimated_hours: Optional[float] = None
     actual_hours: Optional[float] = None
+    # Tool execution fields
+    tool_name: Optional[str] = None
+    tool_params: Dict[str, Any] = None
+    auto_expand: bool = True
+    execution_result: Optional[Dict[str, Any]] = None
     
     def __post_init__(self):
         if self.tags is None:
             self.tags = []
         if self.subtasks is None:
             self.subtasks = []
+        if self.tool_params is None:
+            self.tool_params = {}
 
 
 class TodoTool(Tool):
     """Tool for managing todos and tasks."""
     
-    def __init__(self):
+    def __init__(self, tool_registry=None, llm_provider=None):
         super().__init__(
             name="todo",
             description="Manage todos and tasks with planning capabilities"
         )
         self.todo_file = "agent_todos.json"
+        self.tool_registry = tool_registry
+        self.llm_provider = llm_provider
     
     def validate_input(self, **kwargs) -> bool:
         """Validate input parameters."""
@@ -50,7 +59,8 @@ class TodoTool(Tool):
         
         if not action or action not in [
             "create_todo", "list_todos", "update_todo", "delete_todo",
-            "add_subtask", "get_todo", "search_todos", "get_stats"
+            "add_subtask", "get_todo", "search_todos", "get_stats",
+            "execute_todo", "auto_expand_todo", "get_next_executable_todos"
         ]:
             return False
         
@@ -63,6 +73,9 @@ class TodoTool(Tool):
         
         if action == "add_subtask":
             return "subtask_title" in kwargs
+        
+        if action in ["execute_todo", "auto_expand_todo"]:
+            return "todo_id" in kwargs
         
         return True
     
@@ -94,6 +107,12 @@ class TodoTool(Tool):
                 return self._search_todos(context, **kwargs)
             elif action == "get_stats":
                 return self._get_stats(context, **kwargs)
+            elif action == "execute_todo":
+                return self._execute_todo(context, **kwargs)
+            elif action == "auto_expand_todo":
+                return self._auto_expand_todo(context, **kwargs)
+            elif action == "get_next_executable_todos":
+                return self._get_next_executable_todos(context, **kwargs)
             
         except Exception as e:
             return ToolResult(
@@ -652,3 +671,304 @@ class TodoTool(Tool):
             },
             "required": ["action"]
         }
+    
+    def _execute_todo(self, context: ExecutionContext, **kwargs) -> ToolResult:
+        """Execute a todo item using its tool configuration."""
+        todo_id = kwargs["todo_id"]
+        
+        try:
+            todos = self._load_todos(context)
+            
+            if todo_id not in todos:
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error=f"Todo not found: {todo_id}"
+                )
+            
+            todo = todos[todo_id]
+            
+            # Check if todo has tool configuration
+            if not todo.tool_name:
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error=f"Todo {todo_id} has no tool configuration"
+                )
+            
+            # Execute the tool using tool registry
+            if self.tool_registry:
+                tool = self.tool_registry.get_tool(todo.tool_name)
+                if tool:
+                    # Execute the tool with the configured parameters
+                    tool_result = tool.execute(context, **todo.tool_params)
+                    execution_result = {
+                        "tool_name": todo.tool_name,
+                        "tool_params": todo.tool_params,
+                        "executed_at": datetime.now().isoformat(),
+                        "success": tool_result.success,
+                        "data": tool_result.data,
+                        "error": tool_result.error,
+                        "metadata": tool_result.metadata
+                    }
+                else:
+                    execution_result = {
+                        "tool_name": todo.tool_name,
+                        "tool_params": todo.tool_params,
+                        "executed_at": datetime.now().isoformat(),
+                        "success": False,
+                        "error": f"Tool '{todo.tool_name}' not found in registry"
+                    }
+            else:
+                execution_result = {
+                    "tool_name": todo.tool_name,
+                    "tool_params": todo.tool_params,
+                    "executed_at": datetime.now().isoformat(),
+                    "success": False,
+                    "error": "No tool registry available"
+                }
+            
+            # Update todo with execution result
+            todo.execution_result = execution_result
+            todo.status = "completed"
+            todo.updated_at = datetime.now().isoformat()
+            
+            # Save updated todos
+            if not self._save_todos(context, todos):
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error="Failed to save updated todo"
+                )
+            
+            return ToolResult(
+                success=True,
+                data={
+                    "todo_id": todo_id,
+                    "execution_result": execution_result,
+                    "todo": asdict(todo)
+                }
+            )
+            
+        except Exception as e:
+            return ToolResult(
+                success=False,
+                data=None,
+                error=f"Error executing todo: {str(e)}"
+            )
+    
+    def _auto_expand_todo(self, context: ExecutionContext, **kwargs) -> ToolResult:
+        """Auto-expand a todo based on its execution results."""
+        todo_id = kwargs["todo_id"]
+        
+        try:
+            todos = self._load_todos(context)
+            
+            if todo_id not in todos:
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error=f"Todo not found: {todo_id}"
+                )
+            
+            todo = todos[todo_id]
+            
+            # Check if auto-expansion is enabled
+            if not todo.auto_expand:
+                return ToolResult(
+                    success=True,
+                    data={"message": f"Auto-expansion disabled for todo {todo_id}"}
+                )
+            
+            # Check if there are execution results to expand on
+            if not todo.execution_result:
+                return ToolResult(
+                    success=True,
+                    data={"message": f"No execution results to expand for todo {todo_id}"}
+                )
+            
+            # Use LLM for intelligent expansion if available, otherwise use rule-based
+            if self.llm_provider:
+                new_todos = self._create_llm_driven_follow_ups(todo, todos)
+            else:
+                new_todos = self._create_follow_up_todos(todo, todos)
+            
+            # Save all new todos
+            for new_todo in new_todos:
+                todos[new_todo.id] = new_todo
+                todo.subtasks.append(new_todo.id)
+            
+            todo.updated_at = datetime.now().isoformat()
+            
+            # Save updated todos
+            if not self._save_todos(context, todos):
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error="Failed to save expanded todos"
+                )
+            
+            return ToolResult(
+                success=True,
+                data={
+                    "original_todo_id": todo_id,
+                    "new_todos": [asdict(t) for t in new_todos],
+                    "expansion_count": len(new_todos)
+                }
+            )
+            
+        except Exception as e:
+            return ToolResult(
+                success=False,
+                data=None,
+                error=f"Error auto-expanding todo: {str(e)}"
+            )
+    
+    def _create_follow_up_todos(self, original_todo: TodoItem, todos: Dict[str, TodoItem]) -> List[TodoItem]:
+        """Create intelligent follow-up todos based on execution results."""
+        follow_ups = []
+        
+        # Analyze the execution result to determine follow-ups
+        if not original_todo.execution_result:
+            return follow_ups
+        
+        tool_name = original_todo.execution_result.get("tool_name")
+        
+        # Rule-based expansion based on tool type
+        if tool_name == "read":
+            # After reading, might need to analyze or process
+            follow_ups.append(TodoItem(
+                id=str(uuid.uuid4()),
+                title=f"Analyze: {original_todo.title}",
+                description=f"Analyze the content read from {original_todo.title}",
+                status="pending",
+                priority=original_todo.priority,
+                created_at=datetime.now().isoformat(),
+                updated_at=datetime.now().isoformat(),
+                parent_id=original_todo.id,
+                tags=original_todo.tags + ["auto-generated", "analysis"]
+            ))
+        
+        elif tool_name == "write":
+            # After writing, might need to test or verify
+            follow_ups.append(TodoItem(
+                id=str(uuid.uuid4()),
+                title=f"Verify: {original_todo.title}",
+                description=f"Verify the output from {original_todo.title}",
+                status="pending",
+                priority=original_todo.priority,
+                created_at=datetime.now().isoformat(),
+                updated_at=datetime.now().isoformat(),
+                parent_id=original_todo.id,
+                tags=original_todo.tags + ["auto-generated", "verification"],
+                tool_name="read",
+                tool_params={"action": "read_file", "path": "output.txt"}
+            ))
+        
+        elif tool_name == "execute":
+            # After execution, might need to check results or clean up
+            follow_ups.append(TodoItem(
+                id=str(uuid.uuid4()),
+                title=f"Review results: {original_todo.title}",
+                description=f"Review execution results from {original_todo.title}",
+                status="pending",
+                priority=original_todo.priority,
+                created_at=datetime.now().isoformat(),
+                updated_at=datetime.now().isoformat(),
+                parent_id=original_todo.id,
+                tags=original_todo.tags + ["auto-generated", "review"]
+            ))
+        
+        return follow_ups
+    
+    def _create_llm_driven_follow_ups(self, original_todo: TodoItem, todos: Dict[str, TodoItem]) -> List[TodoItem]:
+        """Create intelligent follow-up todos using LLM analysis."""
+        try:
+            # Prepare context for LLM
+            execution_summary = original_todo.execution_result
+            context_prompt = f"""
+Based on the execution of this todo:
+- Title: {original_todo.title}
+- Description: {original_todo.description}
+- Tool used: {execution_summary.get('tool_name')}
+- Tool parameters: {execution_summary.get('tool_params')}
+- Execution success: {execution_summary.get('success')}
+- Result data: {str(execution_summary.get('data', 'None'))[:200]}...
+- Error (if any): {execution_summary.get('error', 'None')}
+
+Generate 0-3 logical follow-up todos. For each follow-up, provide:
+1. title: Brief descriptive title
+2. description: Detailed description
+3. priority: low/medium/high based on importance
+4. tool_name: Which tool to use (read, write, execute, find, update, or none)
+5. tool_params: Parameters for the tool (if applicable)
+
+Respond with JSON array of follow-up todos. If no follow-ups are needed, return empty array.
+"""
+            
+            # Get LLM response
+            llm_response = self.llm_provider.generate_response(context_prompt)
+            
+            # Parse LLM response to extract follow-ups
+            follow_ups = []
+            try:
+                # Simple extraction - in real implementation would be more robust
+                if "[]" in llm_response or "no follow" in llm_response.lower():
+                    return follow_ups
+                
+                # For now, create one intelligent follow-up based on LLM response
+                follow_up_id = str(uuid.uuid4())
+                follow_up = TodoItem(
+                    id=follow_up_id,
+                    title=f"LLM Follow-up: {original_todo.title}",
+                    description=f"Intelligent follow-up based on LLM analysis: {llm_response[:100]}...",
+                    status="pending",
+                    priority=original_todo.priority,
+                    created_at=datetime.now().isoformat(),
+                    updated_at=datetime.now().isoformat(),
+                    parent_id=original_todo.id,
+                    tags=original_todo.tags + ["auto-generated", "llm-driven"]
+                )
+                follow_ups.append(follow_up)
+                
+            except Exception as parse_error:
+                # Fallback to rule-based if LLM parsing fails
+                return self._create_follow_up_todos(original_todo, todos)
+            
+            return follow_ups
+            
+        except Exception as e:
+            # Fallback to rule-based expansion if LLM fails
+            return self._create_follow_up_todos(original_todo, todos)
+    
+    def _get_next_executable_todos(self, context: ExecutionContext, **kwargs) -> ToolResult:
+        """Get todos that are ready for execution."""
+        try:
+            todos = self._load_todos(context)
+            
+            executable_todos = []
+            
+            for todo in todos.values():
+                # Check if todo is executable
+                if (todo.status == "pending" and 
+                    todo.tool_name and 
+                    todo.tool_params):
+                    executable_todos.append(asdict(todo))
+            
+            # Sort by priority and creation date
+            priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+            executable_todos.sort(
+                key=lambda x: (priority_order.get(x["priority"], 4), x["created_at"])
+            )
+            
+            return ToolResult(
+                success=True,
+                data=executable_todos
+            )
+            
+        except Exception as e:
+            return ToolResult(
+                success=False,
+                data=None,
+                error=f"Error getting executable todos: {str(e)}"
+            )
