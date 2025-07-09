@@ -23,7 +23,6 @@ class AgentConfig:
     llm_provider: str = "mock"  # Will be expanded later
     safety_config: Optional[SafetyConfig] = None
     max_iterations: int = 50
-    auto_planning: bool = True
     verbose_logging: bool = True
     session_id: Optional[str] = None
 
@@ -141,65 +140,9 @@ class Agent:
     
     def _process_conversation(self) -> str:
         """Process the current conversation state."""
-        # Check if we should create a task plan
-        if self.config.auto_planning and not self.current_plan_id:
-            plan_result = self._create_task_plan()
-            if plan_result and plan_result.success:
-                self.current_plan_id = plan_result.data.get("plan_id")
-                self.logger.info(f"Created task plan: {self.current_plan_id}")
-        
-        # Execute current plan or handle directly
-        if self.current_plan_id:
-            return self._execute_current_plan()
-        else:
-            return self._handle_request_directly()
+        # Always use direct LLM-driven approach
+        return self._handle_request_directly()
     
-    def _create_task_plan(self) -> Optional[ToolResult]:
-        """Create a task plan from the latest user message."""
-        try:
-            # Get the latest user message
-            user_messages = [msg for msg in self.conversation_history if msg.role == "user"]
-            if not user_messages:
-                return None
-            
-            latest_message = user_messages[-1].content
-            
-            # Use task tool to decompose the request
-            task_tool = self.tool_registry.get_tool("task")
-            if not task_tool:
-                return None
-            
-            # Determine task type based on keywords
-            task_type = self._determine_task_type(latest_message)
-            
-            result = task_tool.execute(
-                self.execution_context,
-                action="decompose_task",
-                description=latest_message,
-                task_type=task_type,
-                conversation_context=self._get_conversation_context()
-            )
-            
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"Error creating task plan: {str(e)}")
-            return None
-    
-    def _determine_task_type(self, text: str) -> str:
-        """Determine task type from text."""
-        text_lower = text.lower()
-        
-        if any(word in text_lower for word in ["implement", "create", "build", "develop", "write code"]):
-            return "development"
-        elif any(word in text_lower for word in ["analyze", "research", "investigate", "understand", "explore"]):
-            return "analysis"
-        elif any(word in text_lower for word in ["fix", "debug", "resolve", "solve", "error", "bug"]):
-            return "bugfix"
-        elif any(word in text_lower for word in ["refactor", "improve", "optimize", "clean up", "restructure"]):
-            return "refactor"
-        else:
-            return "generic"
     
     def _get_conversation_context(self) -> str:
         """Get conversation context for task planning."""
