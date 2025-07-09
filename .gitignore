@@ -166,6 +166,7 @@ cython_debug/
 examples/workspace/
 examples/advanced_workspace/
 examples/tool_chain_demo/
+workspace/
 
 # Agent state files
 agent_todos.json
