@@ -98,7 +98,7 @@ class Agent:
             ExecuteTool(),
             FindTool(),
             UpdateTool(),
-            TodoTool(),
+            TodoTool(tool_registry=self.tool_registry, llm_provider=self.llm_provider),
             TaskTool()
         ]
         
